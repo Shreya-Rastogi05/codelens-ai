@@ -78,9 +78,10 @@ Language: {language}
             "analysis": response.text
         }
 
-    except errors.ServerError:
+    except errors.ServerError as e:
+        print("GEMINI SERVER ERROR:", e)
         return {
             "language": language,
             "code": code,
-            "analysis": "Gemini is temporarily busy. Please try again in a few moments."
+            "analysis": "Gemini server error. Check Render logs for details."
         }
