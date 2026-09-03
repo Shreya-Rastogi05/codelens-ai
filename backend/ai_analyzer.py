@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 from google import genai
 from google.genai import errors
@@ -67,32 +68,60 @@ Language: {language}
 {code}
 """
 
-    try:
-        response = client.models.generate_content(
-            model="gemini-3.6-flash",
-            contents=prompt
+    models = [
+        "gemini-3.6-flash",
+        "gemini-3.6-flash-lite"
+    ]
+
+    last_error = None
+
+    for model in models:
+
+        for attempt in range(3):
+
+            try:
+                print(
+                    f"Trying Gemini model: {model}, attempt: {attempt + 1}"
+                )
+
+                response = client.models.generate_content(
+                    model=model,
+                    contents=prompt
+                )
+
+                return {
+                    "language": language,
+                    "code": code,
+                    "analysis": response.text
+                }
+
+            except errors.ServerError as e:
+                last_error = str(e)
+
+                print(
+                    f"Gemini server error with {model}, "
+                    f"attempt {attempt + 1}: {e}"
+                )
+
+                # Wait before retrying
+                if attempt < 2:
+                    time.sleep(2)
+
+            except Exception as e:
+                last_error = str(e)
+
+                print(
+                    f"Gemini error with {model}: {e}"
+                )
+
+                break
+
+    return {
+        "language": language,
+        "code": code,
+        "analysis": (
+            "Gemini is temporarily unavailable. "
+            "Please try again in a few moments.\n\n"
+            f"Technical details: {last_error}"
         )
-
-        return {
-            "language": language,
-            "code": code,
-            "analysis": response.text
-        }
-
-    except errors.ServerError as e:
-        print("GEMINI SERVER ERROR:", e)
-
-        return {
-            "language": language,
-            "code": code,
-            "analysis": f"Gemini server error: {str(e)}"
-        }
-
-    except Exception as e:
-        print("GEMINI ERROR:", e)
-
-        return {
-            "language": language,
-            "code": code,
-            "analysis": f"Gemini error: {str(e)}"
-        }
+    }
