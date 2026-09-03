@@ -6,6 +6,7 @@ from google.genai import errors
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
+
 client = genai.Client(api_key=api_key)
 
 
@@ -42,7 +43,7 @@ IMPORTANT:
 - Write O(1), O(n), O(n^2), O(log n), etc.
 - Do NOT use LaTeX.
 - Do NOT use $ symbols.
-- Do NOT use \mathcal or other mathematical formatting.
+- Do NOT use mathematical formatting.
 
 ### 5. SPACE COMPLEXITY
 Give the space complexity and briefly explain it.
@@ -52,7 +53,7 @@ IMPORTANT:
 - Write O(1), O(n), O(n^2), O(log n), etc.
 - Do NOT use LaTeX.
 - Do NOT use $ symbols.
-- Do NOT use \mathcal or other mathematical formatting.
+- Do NOT use mathematical formatting.
 
 ### 6. CORRECTED CODE
 Provide the complete corrected or improved code.
@@ -80,8 +81,18 @@ Language: {language}
 
     except errors.ServerError as e:
         print("GEMINI SERVER ERROR:", e)
+
         return {
             "language": language,
             "code": code,
-            "analysis": "Gemini server error. Check Render logs for details."
+            "analysis": f"Gemini server error: {str(e)}"
+        }
+
+    except Exception as e:
+        print("GEMINI ERROR:", e)
+
+        return {
+            "language": language,
+            "code": code,
+            "analysis": f"Gemini error: {str(e)}"
         }
